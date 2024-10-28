@@ -4,49 +4,71 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from keras.callbacks import EarlyStopping
 import tensorflow as tf
+import joblib
 
-from Models import feed_forward
+from Models.feed_forward import build_model
+from get_sensitivity import Sensitivity
 
 
-# Create data
-N = 1000
-X = np.random.rand(N)*2*np.pi
-X = X.reshape(-1, 1)
-y = np.sin(X)
+class Experiment():
 
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=23)
+    def __init__(self, N=1000, test_size=0.20):
+        self.N = N
+        self.test_size=test_size
+        self.model = None
+        self.scaler = StandardScaler()
+        self.X_train, self.X_test, self.y_train, self.y_test = self.get_data()
+        self.scale_data()
 
-# Scale inputs
-scaler = StandardScaler()
-scaler.fit(X_train)
-X_train = scaler.transform(X_train)
-X_test = scaler.transform(X_test)
+    def get_data(self):
+        """Get train and test datasets."""
+        X = np.random.rand(self.N)*2*np.pi
+        X = X.reshape(-1, 1)
+        y = np.sin(X)+X
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=23)
+        return X_train, X_test, y_train, y_test
 
-# Build model
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=50)
-model = feed_forward.build_model(input_shape=1, output_shape=1)
-history = model.fit(X_train, y_train, batch_size=32, epochs=1000, validation_split=0.20, verbose=1, callbacks=[es])
+    def scale_data(self):
+        """Scale inputs to have zero mean and unit std."""
+        self.scaler.fit(self.X_train)
+        self.X_train = self.scaler.transform(self.X_train)
+        self.X_test = self.scaler.transform(self.X_test)
 
-# Get predictions
-y_pred = model.predict(X_test)
-plt.scatter(y_test, y_pred)
-plt.grid()
-plt.tight_layout()
-plt.show()
+    def build_and_train_model(self):
+        """Build regression model."""
+        es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=20)
+        self.model = build_model(input_shape=1, output_shape=1)
+        self.model.fit(
+            self.X_train, self.y_train,
+            batch_size=32, epochs=1000, validation_split=0.20,
+            verbose=1, callbacks=[es])
+        
+    def save_model_and_scaler(self, model_path, scaler_path):
+        """Save trained regression model."""
+        self.model.save(model_path)
+        joblib.dump(self.scaler, scaler_path)
 
-# Compute gradient
-x_tensor = tf.constant(X_test, dtype=tf.float64)
-with tf.GradientTape() as t:
-    t.watch(x_tensor)
-    output = model(x_tensor)
-# Divide by scaler scale to get back true gradient
-dy_dx = t.gradient(output, x_tensor)/(scaler.scale_)
+    def plot_predictions(self):
+        """Compare model predictions to true test values."""
+        y_pred = self.model.predict(self.X_test)
+        plt.scatter(self.y_test, y_pred)
+        plt.grid()
+        plt.tight_layout()
+        plt.show()
 
-# Plot gradient
-X_test = scaler.inverse_transform(X_test)
-plt.scatter(X_test, np.cos(X_test))
-plt.scatter(X_test, dy_dx)
-plt.grid()
-plt.tight_layout()
-plt.show()
+if __name__ == "__main__":
+
+    # Build experiment
+    expe = Experiment()
+    expe.build_and_train_model()
+    model_path = "Sensitivity_analysis/regression_model.h5"
+    scaler_path = "Sensitivity_analysis/regression_scaler.gz"
+    expe.save_model_and_scaler(model_path, scaler_path)
+    expe.plot_predictions()
+
+    # Compute sensitivity values
+    data = expe.scaler.inverse_transform(expe.X_test)
+    sens = Sensitivity(expe.model, expe.scaler, data)
+    sens.compute_gradient()
+    sens.plot_gradient()
+    mu, sigma, mu_sqd = sens.get_measures()
