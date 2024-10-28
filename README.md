@@ -16,6 +16,7 @@ Several different Neural Network Models
 Computation of the gradient of outputs w.r.t. inputs, following [1] and some other sensitivity measures inspired by [2].
 
 [1] Y. Dimopoulos, Paul Bourret, and Sovan Lek. “Use of some sensitivity criteria for choosing networks with good generalization ability”. In: Neural Processing Letters 2 (Dec. 1995), pp. 1–4. DOI: 10.1007/BF02309007.
+
 [2] Jaime Pizarroso, José Portela, and Antonio Muñoz. “NeuralSens: Sensitivity Analysis of Neural Networks”. In: Journal of Statistical Software 102.7 (2022), pp. 1–36. DOI: 10 . 18637/jss.v102.i07.
 
 <br>
