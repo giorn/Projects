@@ -19,6 +19,11 @@ Computation of the gradient of outputs w.r.t. inputs, following [1] and some oth
 
 [2] Jaime Pizarroso, José Portela, and Antonio Muñoz. *NeuralSens: Sensitivity Analysis of Neural Networks*, Journal of Statistical Software 102.7 (2022), pp. 1–36.
 
+#### 3. BFGS Failure Robustness Improvement
+Benchmark optimization functions from [3]
+
+[3] https://github.com/AxelThevenot/Python_Benchmark_Test_Optimization_Function_Single_Objective?tab=readme-ov-file
+
 <br>
 
 ### Publications
