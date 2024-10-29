@@ -17,7 +17,7 @@ class Experiment():
         self.test_size=test_size
         self.model = None
         self.scaler = StandardScaler()
-        self.X_train, self.X_test, self.y_train, self.y_test = self.get_data()
+        self.X_train, self.X_test, self.y_train, self.y_test = self.get_data_3()
         self.scale_data()
 
     def get_data(self):
@@ -34,6 +34,17 @@ class Experiment():
         X2 = (np.random.rand(self.N)).reshape(-1, 1)
         X = np.concatenate((X1, X2), axis=1)
         y = np.sin(X1)+X2
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=23)
+        return X_train, X_test, y_train, y_test
+    
+    def get_data_3(self):
+        """Get train and test datasets."""
+        X1 = (np.random.rand(self.N)*2*np.pi).reshape(-1, 1)
+        X2 = (np.random.rand(self.N)).reshape(-1, 1)
+        X = np.concatenate((X1, X2), axis=1)
+        y1 = (np.sin(X1)+X2).reshape(-1, 1)
+        y2 = (3*np.cos(X1)-2*X2).reshape(-1, 1)
+        y = np.concatenate((y1, y2), axis=1)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=23)
         return X_train, X_test, y_train, y_test
 
@@ -79,6 +90,8 @@ if __name__ == "__main__":
     data = expe.scaler.inverse_transform(expe.X_test)
     sens = Sensitivity(expe.model, expe.scaler, data)
     sens.compute_gradient()
-    sens.plot_gradient(0)
-    sens.plot_gradient(1)
+    sens.plot_gradient(0, 0) # dy1_dx1
+    sens.plot_gradient(0, 1) # dy2_dx1
+    sens.plot_gradient(1, 0) # dy1_dx2
+    sens.plot_gradient(1, 1) # dy2_dx2
     mu, sigma, mu_sqd = sens.get_measures()
