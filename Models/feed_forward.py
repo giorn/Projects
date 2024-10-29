@@ -12,7 +12,7 @@ def build_model(input_shape, output_shape):
     outputs = layers.Dense(output_shape, activation='linear')(x)
     model = models.Model(inputs=inputs, outputs=outputs)
     opt = Adam(learning_rate=1e-3)
-    model.compile(optimizer=opt, loss='mse')
+    model.compile(optimizer=opt, loss='mean_squared_error')
     return model
 
 if __name__ == "__main__":
