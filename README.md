@@ -4,8 +4,8 @@ Small portoflio of Python projects, mainly in:
 - Optimization
 - Machine Learning
 
-These projects are related to my industrial PhD supervised by A. Iouditski (Laboratoire Jean Kuntzmann, Saint-Martin-d'Hères, France) in collaboration with STMicroelectronics (Crolles, France):
-G.Caron, *Statistical learning techniques: application to inverse design and optimization of silicon germanium heterojunction bipolar transistors*, 2024
+These projects are related to my industrial PhD supervised by A. Iouditski (Laboratoire Jean Kuntzmann) in collaboration with STMicroelectronics (Crolles, France):
+G. Caron, *Statistical learning techniques: application to inverse design and optimization of silicon germanium heterojunction bipolar transistors*, 2024
 
 ### Work in Progress
 
