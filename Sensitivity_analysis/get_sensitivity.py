@@ -28,8 +28,9 @@ class Sensitivity():
         plt.tight_layout()
         plt.show()
 
-    def get_measures(self):
-        mean_sens = np.mean(self.dy_dx)
-        sens_std = np.std(self.dy_dx)
-        mean_sqd_sens = np.sqrt(np.mean(self.dy_dx))
+    def get_measures(self, i, j):
+        """Compute additional sensitivity measures."""
+        mean_sens = np.mean(self.dy_dx[j][:,i])
+        sens_std = np.std(self.dy_dx[j][:,i])
+        mean_sqd_sens = np.sqrt(np.mean(self.dy_dx[j][:,i]))
         return mean_sens, sens_std, mean_sqd_sens
