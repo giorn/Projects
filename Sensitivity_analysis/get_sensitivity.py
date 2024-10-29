@@ -14,16 +14,16 @@ class Sensitivity():
         """Compute the gradient of outputs w.r.t. inputs"""
         scaled_data = self.scaler.transform(self.data)
         x_tensor = tf.constant(scaled_data, dtype=tf.float64)
-        with tf.GradientTape() as t:
+        with tf.GradientTape(persistent=True) as t:
             t.watch(x_tensor)
             output = self.model(x_tensor)
         # Divide by scaler scale to get back true gradient
+        # self.dy_dx shape = (len(self.data), nb of inputs)
         self.dy_dx = t.gradient(output, x_tensor)/(self.scaler.scale_)
 
-    def plot_gradient(self):
+    def plot_gradient(self, i):
         """Plot the gradient."""
-        plt.scatter(self.data, np.cos(self.data)+1)
-        plt.scatter(self.data, self.dy_dx)
+        plt.scatter(self.data[:,i], self.dy_dx[:,i])
         plt.grid()
         plt.tight_layout()
         plt.show()
