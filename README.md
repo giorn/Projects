@@ -15,17 +15,17 @@ Several different Neural Network Models
 #### 2. Sensitivity Analysis
 Computation of the gradient of outputs w.r.t. inputs, following [1] and some other sensitivity measures inspired by [2].
 
-[1] Y. Dimopoulos, Paul Bourret, and Sovan Lek. “Use of some sensitivity criteria for choosing networks with good generalization ability”. In: Neural Processing Letters 2 (Dec. 1995), pp. 1–4. DOI: 10.1007/BF02309007.
+[1] Y. Dimopoulos, Paul Bourret, and Sovan Lek. *Use of some sensitivity criteria for choosing networks with good generalization ability*, Neural Processing Letters 2 (Dec. 1995), pp. 1–4.
 
-[2] Jaime Pizarroso, José Portela, and Antonio Muñoz. “NeuralSens: Sensitivity Analysis of Neural Networks”. In: Journal of Statistical Software 102.7 (2022), pp. 1–36. DOI: 10 . 18637/jss.v102.i07.
+[2] Jaime Pizarroso, José Portela, and Antonio Muñoz. *NeuralSens: Sensitivity Analysis of Neural Networks*, Journal of Statistical Software 102.7 (2022), pp. 1–36.
 
 <br>
 
 ### Publications
 
 List of conferences:
-- G.Caron, A.Juditsky, N.Guitard, D.Céli, *Recovery of Intrinsic Heterojunction Bipolar Transistors Profiles by Neural Networks*, BCICTS 2022
-- G.Caron, A.Juditsky, N.Guitard, D.Céli, *Physics-based LSTM Neural Networks Surrogate Model for SiGe HBT Intrinsic Profile Optimization*, SSDM 2024
+- G. Caron, A. Juditsky, N. Guitard, D. Céli, *Recovery of Intrinsic Heterojunction Bipolar Transistors Profiles by Neural Networks*, BCICTS 2022
+- G. Caron, A. Juditsky, N. Guitard, D. Céli, *Physics-based LSTM Neural Networks Surrogate Model for SiGe HBT Intrinsic Profile Optimization*, SSDM 2024
 
 List of inventions:
 - *Failure-robust BFGS algorithm*
