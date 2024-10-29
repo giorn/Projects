@@ -95,10 +95,6 @@ if __name__ == "__main__":
     sens.plot_gradient(1, 0) # dy1_dx2
     sens.plot_gradient(1, 1) # dy2_dx2
     mu, sigma, mu_sqd = sens.get_measures(0, 0)
-    print(mu)
-    print(sigma)
     mu, sigma, mu_sqd = sens.get_measures(0, 1)
-    print(mu)
-    print(sigma)
     mu, sigma, mu_sqd = sens.get_measures(1, 0)
     mu, sigma, mu_sqd = sens.get_measures(1, 1)
