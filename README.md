@@ -24,8 +24,8 @@ Computation of the gradient of outputs w.r.t. inputs, following [1] and some oth
 ### Publications
 
 List of conferences:
-- G.Caron, A.Juditsky, N.Guitard, D.Céli, *Recovery of Intrinsic Heterojunction Bipolar Transistors Profiles by Neural Networks*, BCICTS 2022
-- G.Caron, A.Juditsky, N.Guitard, D.Céli, *Physics-based LSTM Neural Networks Surrogate Model for SiGe HBT Intrinsic Profile Optimization*, SSDM 2024
+- G. Caron, A. Juditsky, N. Guitard, D. Céli, *Recovery of Intrinsic Heterojunction Bipolar Transistors Profiles by Neural Networks*, BCICTS 2022
+- G. Caron, A. Juditsky, N. Guitard, D. Céli, *Physics-based LSTM Neural Networks Surrogate Model for SiGe HBT Intrinsic Profile Optimization*, SSDM 2024
 
 List of inventions:
 - *Failure-robust BFGS algorithm*
