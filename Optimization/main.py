@@ -73,19 +73,24 @@ def main(nb_of_opti, func, fun_tol=1e-4, method="BFGS", proba_of_failure=0.00, v
         except Exception:
             if verbose:
                 print("Crash")
-            opti_results_list.append(-np.inf)
+            opti_results_list.append(-np.nan)
 
-    return opti_results_list
+    return np.array(opti_results_list)
 
-def get_performance_profile(results_list):
-    """Plot performance profile for the set of optimizations."""
-    results_list = [np.amax(results_list) if np.isinf(x) else x for x in results_list]
-    results_list = results_list / np.amin(results_list)
-    results_list = np.sort(results_list)
-    probas_cumulees = np.arange(1, len(results_list) + 1) / len(results_list)
-    plt.step(results_list, probas_cumulees, where='post')
-    plt.xlabel(r"$\frac{NF}{NF_{min}}$")
+def get_performance_profile(results_dic):
+    """Plot performance profiles for given sets of optimizations."""
+    global_min = min(np.nanmin(l) for l in results_dic.values())
+    print(global_min)
+    for proba, results_list in results_dic.items():
+        full_length = len(results_list)
+        results_list = results_list[~np.isnan(results_list)] / global_min
+        results_list = results_list 
+        results_list = np.sort(results_list)
+        probas_cumulees = np.arange(1, len(results_list) + 1) / full_length
+        plt.step(results_list, probas_cumulees, where="post", label=f"{proba} %")
+    plt.xlabel(r"$NF / NF_{min}$")
     plt.ylabel("Proportion of convergence")
+    plt.legend(title="Probability of failure")
     plt.grid()
     plt.tight_layout()
     plt.show()
@@ -105,4 +110,4 @@ if __name__ == "__main__":
     nb_of_opti = 100
     opti_list_000 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.00)
     opti_list_001 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.01)
-    get_performance_profile(opti_list_001)
+    get_performance_profile({0.00:opti_list_000, 0.01:opti_list_001})
