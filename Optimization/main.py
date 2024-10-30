@@ -1,12 +1,13 @@
 import numpy as np
 from scipy.optimize import minimize
+import matplotlib.pyplot as plt
 
 import Benchmark_Functions.pybenchfunction as bench
 
 
 class Failure():
 
-    def __init__(self, func, proba_of_failure):
+    def __init__(self, func, proba_of_failure=0.00):
         self.func = func
         self.proba_of_failure = proba_of_failure
     
@@ -44,7 +45,7 @@ class ObjectiveFunctionWrapper:
         if self.last_f < self.fun_tol:
             raise Trigger
         
-def main(nb_of_opti, func, proba_of_failure, fun_tol, method, verbose=0):
+def main(nb_of_opti, func, fun_tol=1e-4, method="BFGS", proba_of_failure=0.00, verbose=0):
     """Launches several optimizations.
     Inputs:
     - nb_of_opti: number of optimizations launched
@@ -72,12 +73,22 @@ def main(nb_of_opti, func, proba_of_failure, fun_tol, method, verbose=0):
         except Exception:
             if verbose:
                 print("Crash")
-            opti_results_list.append("Crash")
+            opti_results_list.append(-np.inf)
 
     return opti_results_list
 
 def get_performance_profile(results_list):
-
+    """Plot performance profile for the set of optimizations."""
+    results_list = [np.amax(results_list) if np.isinf(x) else x for x in results_list]
+    results_list = results_list / np.amin(results_list)
+    results_list = np.sort(results_list)
+    probas_cumulees = np.arange(1, len(results_list) + 1) / len(results_list)
+    plt.step(results_list, probas_cumulees, where='post')
+    plt.xlabel(r"$\frac{NF}{NF_{min}}$")
+    plt.ylabel("Proportion of convergence")
+    plt.grid()
+    plt.tight_layout()
+    plt.show()
         
 if __name__ == "__main__":
 
@@ -88,10 +99,10 @@ if __name__ == "__main__":
 
     # Optimization parameters
     fun_tol = 1e-4
-    proba_of_failure = 0.00
     method = "BFGS"
     
     # Launch several optimizations
     nb_of_opti = 100
-    opti_results_list = main(nb_of_opti, func, proba_of_failure, fun_tol, method)
-    print(opti_results_list)
+    opti_list_000 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.00)
+    opti_list_001 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.01)
+    get_performance_profile(opti_list_001)
