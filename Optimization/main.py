@@ -32,18 +32,28 @@ class ObjectiveFunctionWrapper:
         self.number_of_iter = 0
 
     def __call__(self, x):
+        """Calls to wrapped function."""
         self.last_x = x
         self.last_f = self.fun(x)
         self.number_of_f_evals += 1
         return self.last_f
 
     def stop(self, *args):
+        """Callback: checks if termination condition is reached."""
         self.number_of_iter += 1
         if self.last_f < self.fun_tol:
             raise Trigger
         
 def main(nb_of_opti, func, proba_of_failure, fun_tol, method, verbose=0):
-
+    """Launches several optimizations.
+    Inputs:
+    - nb_of_opti: number of optimizations launched
+    - func: function to optimize
+    - proba_of_failure: probability of failure
+    - fun_tol: termination criterion
+    - method: optimization scheme
+    - verbose: print (1) or not (0) the results of the optimization
+    """
     fail = Failure(func, proba_of_failure)
     opti_results_list = []
 
@@ -65,6 +75,9 @@ def main(nb_of_opti, func, proba_of_failure, fun_tol, method, verbose=0):
             opti_results_list.append("Crash")
 
     return opti_results_list
+
+def get_performance_profile(results_list):
+
         
 if __name__ == "__main__":
 
@@ -75,7 +88,7 @@ if __name__ == "__main__":
 
     # Optimization parameters
     fun_tol = 1e-4
-    proba_of_failure = 0.01
+    proba_of_failure = 0.00
     method = "BFGS"
     
     # Launch several optimizations
