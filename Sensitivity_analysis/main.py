@@ -1,13 +1,19 @@
+""" 
+Author: Gregoire Caron 
+Date Created: 2024-10-28
+Last Modified: 2024-10-31
+Module to apply sensitivity measure extraction to several datasets.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from keras.callbacks import EarlyStopping
-import tensorflow as tf
 import joblib
 
-from Models.feed_forward import build_model
 from get_sensitivity import Sensitivity
+from Models.feed_forward import build_model
 
 
 class Experiment():

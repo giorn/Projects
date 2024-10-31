@@ -1,3 +1,10 @@
+""" 
+Author: Gregoire Caron 
+Date Created: 2024-10-28
+Last Modified: 2024-10-31
+Module to compute the sensitivity (and some associated measures) of outputs w.r.t. inputs.
+"""
+
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,6 +16,7 @@ class Sensitivity():
         self.model = model
         self.scaler = scaler
         self.data = data
+        self.dy_dx = None
 
     def compute_gradient(self):
         """Compute the gradient of outputs w.r.t. inputs"""
