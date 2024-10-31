@@ -38,7 +38,7 @@ class ObjectiveFunctionWrapper:
         self.last_x = x
         _f = self.fun(x)
         if (_f == "Crash") and self.handle_failure:
-            _f = 2*self.last_f
+            _f = 1.01*self.last_f
         self.number_of_f_evals += 1
         return _f
 
@@ -84,16 +84,16 @@ def main(nb_of_opti, func, fun_tol=1e-4, method="BFGS", proba_of_failure=0.00, v
 def get_performance_profile(results_dic):
     """Plot performance profiles for given sets of optimizations."""
     global_min = min(np.nanmin(l) for l in results_dic.values())
-    for proba, results_list in results_dic.items():
+    for (proba, handle), results_list in results_dic.items():
         full_length = len(results_list)
         results_list = results_list[~np.isnan(results_list)] / global_min
         results_list = results_list 
         results_list = np.sort(results_list)
         probas_cumulees = np.arange(1, len(results_list) + 1) / full_length
-        plt.step(results_list, probas_cumulees, where="post", label=f"{proba} %")
+        plt.step(results_list, probas_cumulees, where="post", label=f"p = {proba} % - handle failure = {handle}")
     plt.xlabel(r"$NF / NF_{min}$")
     plt.ylabel("Proportion of convergence")
-    plt.legend(title="Probability of failure")
+    plt.legend()
     plt.grid()
     plt.tight_layout()
     plt.show()
@@ -110,8 +110,10 @@ if __name__ == "__main__":
     method = "BFGS"
     
     # Launch several optimizations
-    nb_of_opti = 100
+    nb_of_opti = 1000
     opti_list_000 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.00)
-    opti_list_001 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.01)
-    opti_list_001 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.01, handle_failure=1)
-    get_performance_profile({0.00:opti_list_000, 0.01:opti_list_001})
+    opti_list_001_no = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.01)
+    opti_list_001_yes = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.01, handle_failure=1)
+    get_performance_profile({(0.00, "NO"):opti_list_000, \
+                            (0.01, "NO"):opti_list_001_no, \
+                            (0.01, "YES"):opti_list_001_yes})
