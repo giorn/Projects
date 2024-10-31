@@ -55,6 +55,12 @@ Benchmark optimization functions from https://github.com/AxelThevenot/Python_Ben
 
 [4] J. Nocedal and S.J. Wright. Numerical Optimization. Springer, 1999.
 
+#### 4. Noise estimation
+
+Application of the ECNoise algorithm, by Moré and Wild [5].
+
+[5] Jorge Moré and Stefan Wild. “Estimating Derivatives of Noisy Simulations”. In: ACM Transactions on Mathematical Software (TOMS) 38 (Apr. 2012). 
+
 <br>
 
 ### Publications
