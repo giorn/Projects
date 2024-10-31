@@ -22,7 +22,8 @@ Computation of the gradient of outputs w.r.t. inputs, following [1] and some oth
 #### 3. BFGS Failure Robustness Improvement
 Benchmark optimization functions from [3]
 
-<img width="600" alt="bisection_2" src="https://github.com/user-attachments/assets/0ed74f86-b5c8-4bcb-a6a9-bcf9cce2c886">
+<img width="430" alt="bisection_2" src="https://github.com/user-attachments/assets/0ed74f86-b5c8-4bcb-a6a9-bcf9cce2c886"> &emsp; &emsp;
+<img width="400" alt="convergence" src="https://github.com/user-attachments/assets/0adb91cc-ddef-4b41-b932-f34d4c42f854">
 
 [3] https://github.com/AxelThevenot/Python_Benchmark_Test_Optimization_Function_Single_Objective?tab=readme-ov-file
 
