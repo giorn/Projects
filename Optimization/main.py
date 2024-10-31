@@ -24,28 +24,32 @@ class Trigger(Exception):
 
 class ObjectiveFunctionWrapper:
 
-    def __init__(self, fun, fun_tol=None):
+    def __init__(self, fun, fun_tol=None, f_x0=np.inf, handle_failure=0):
         self.fun = fun
         self.fun_tol = fun_tol
         self.last_x = 0
-        self.last_f = 0
+        self.last_f = f_x0
         self.number_of_f_evals = 0
         self.number_of_iter = 0
+        self.handle_failure = handle_failure
 
     def __call__(self, x):
         """Calls to wrapped function."""
         self.last_x = x
-        self.last_f = self.fun(x)
+        _f = self.fun(x)
+        if (_f == "Crash") and self.handle_failure:
+            _f = 2*self.last_f
         self.number_of_f_evals += 1
-        return self.last_f
+        return _f
 
     def stop(self, *args):
         """Callback: checks if termination condition is reached."""
         self.number_of_iter += 1
+        self.last_f = self.fun(self.last_x)
         if self.last_f < self.fun_tol:
             raise Trigger
         
-def main(nb_of_opti, func, fun_tol=1e-4, method="BFGS", proba_of_failure=0.00, verbose=0):
+def main(nb_of_opti, func, fun_tol=1e-4, method="BFGS", proba_of_failure=0.00, verbose=0, handle_failure=0):
     """Launches several optimizations.
     Inputs:
     - nb_of_opti: number of optimizations launched
@@ -60,7 +64,7 @@ def main(nb_of_opti, func, fun_tol=1e-4, method="BFGS", proba_of_failure=0.00, v
 
     for i in range(nb_of_opti):
         x0 = np.random.rand(3)*2
-        f_wrapped = ObjectiveFunctionWrapper(fail.function, fun_tol)
+        f_wrapped = ObjectiveFunctionWrapper(fail.function, fun_tol, func(x0), handle_failure)
         try:
             res = minimize(f_wrapped, x0, method=method, callback=f_wrapped.stop)
         except Trigger:
@@ -80,7 +84,6 @@ def main(nb_of_opti, func, fun_tol=1e-4, method="BFGS", proba_of_failure=0.00, v
 def get_performance_profile(results_dic):
     """Plot performance profiles for given sets of optimizations."""
     global_min = min(np.nanmin(l) for l in results_dic.values())
-    print(global_min)
     for proba, results_list in results_dic.items():
         full_length = len(results_list)
         results_list = results_list[~np.isnan(results_list)] / global_min
@@ -110,4 +113,5 @@ if __name__ == "__main__":
     nb_of_opti = 100
     opti_list_000 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.00)
     opti_list_001 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.01)
+    opti_list_001 = main(nb_of_opti, func, fun_tol, method, proba_of_failure=0.01, handle_failure=1)
     get_performance_profile({0.00:opti_list_000, 0.01:opti_list_001})
