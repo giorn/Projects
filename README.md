@@ -31,7 +31,7 @@ To ensure $$s_k^T y_k > 0$$ and $$p_k^T = - B_k^{-1} \nabla f(x_k)$$, the strong
 where $$c_1 = 10^{-4}$$ and $$c_2 = 0.9$$, following [4].
 
 An iterative scheme is used to find such an acceptable step length $\alpha_k$. For SciPy's BFGS implementation, it is the one by Wright and Nocedal [4].
-However, failure may happen in $\phi(\alpha)$ for any candidate step $\alpha$. We adopt a wide definition of failure in the case of black-box optimization on a third-party simulator (e.g. TCAD):
+However, failure may happen in $\phi(\alpha_j)$ for any candidate step $\alpha_j$. We adopt a wide definition of failure in the case of black-box optimization on a third-party simulator (e.g. TCAD):
 - simulator crashes
 - improper inputs (e.g. unrealistic or punchthrough HBT profiles)
 
@@ -40,7 +40,11 @@ They can be detected by monitoring the simulation time, the input, or the result
 If $$\exists \alpha_j > 0, x_k + \alpha_j p_k \in F$$, then $$\forall \alpha > \alpha_j, x_k + \alpha p_k \in F$$
 with F the set of failing profiles.
 
-To avoid the optimization procedure to stop when encountering such a failure point, 
+To avoid the optimization procedure to stop when encountering such a failure point, we propose to set:
+
+$$\phi(\alpha_j) = \lambda \phi(0), \lambda > 1$$
+
+In that case, the Armijo condition is not respected in $\alpha_j$. This new value of $\phi(\alpha_j)$ is taken into consideration when finding the next candidate step length $\alpha_k$, following one of three schemes (cubic interpolation, quadratic interpolation or, most of the time, bisection).
 
 <img width="400" alt="bisection_2" src="https://github.com/user-attachments/assets/0ed74f86-b5c8-4bcb-a6a9-bcf9cce2c886"> &emsp; &emsp;
 <img width="370" alt="convergence" src="https://github.com/user-attachments/assets/0adb91cc-ddef-4b41-b932-f34d4c42f854">
@@ -48,6 +52,7 @@ To avoid the optimization procedure to stop when encountering such a failure poi
 Benchmark optimization functions from https://github.com/AxelThevenot/Python_Benchmark_Test_Optimization_Function_Single_Objective?tab=readme-ov-file
 
 [3] Philip Wolfe. “Convergence Conditions for Ascent Methods”. In: SIAM Review 11.2 (1969), pp. 226–235.
+
 [4] J. Nocedal and S.J. Wright. Numerical Optimization. Springer, 1999.
 
 <br>
