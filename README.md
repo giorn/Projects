@@ -57,7 +57,20 @@ Benchmark optimization functions from https://github.com/AxelThevenot/Python_Ben
 
 #### 4. Noise estimation
 
-Application of the ECNoise algorithm, by Moré and Wild [5].
+Application of the ECNoise algorithm, by Moré and Wild [5], to compute an estimate $\sigma_k$ of the noise level $\epsilon_f = Var(\epsilon)^{1/2}$ of an objective $f$:
+
+$$\sigma_k^2 = \frac{\gamma_k}{m+1-k} \sum_{i=0}^{m-k} \Delta^k f(x_i)^2$$
+
+where $x_i = x + ihd, i=0, ..., m$, $\gamma_k = \frac{(k!)^2}{(2k)!}$ and:
+
+$$
+\left\lbrace
+\begin{array}{ll}
+\Delta^0 f(x) = f(x) & \newline
+\Delta^{k+1} f(x) = \Delta^k f(x+hd) - \Delta^k f(x) &
+\end{array}
+\right.
+$$
 
 [5] Jorge Moré and Stefan Wild. “Estimating Derivatives of Noisy Simulations”. In: ACM Transactions on Mathematical Software (TOMS) 38 (Apr. 2012). 
 
