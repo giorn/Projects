@@ -1,16 +1,16 @@
 """ 
 Author: Gregoire Caron 
 Date Created: 2024-10-31
-Last Modified: 2024-10-31
+Last Modified: 2024-11-01
 Module displaying an application of the ECNoise algorithm by More and Wild.
 """
 
+import math
 import numpy as np
 import matplotlib.pyplot as plt
-import math
 
 
-def noisy_function(x, noise_std=0.1):
+def noisy_function(x, noise_std=0.01):
     """Define a noisy function."""
     smooth = x*x
     noise = np.random.normal(0, noise_std, size=np.shape(x))
@@ -49,5 +49,5 @@ def noise_estimation(x, h, m):
             return sigma_list[l]
 
 if __name__ == "__main__":
-    sigma_k = noise_estimation(x=1, h=1e-10, m=10)
-    print(sigma_k)
+    noise_estimate = noise_estimation(x=1, h=1e-3, m=10)
+    print(noise_estimate)
