@@ -23,16 +23,31 @@ def plot_function(x, y):
     plt.tight_layout()
     plt.show()
 
+def has_both_negative_and_positive(nb_list):
+    """Check if a given list of numbers contains both negative and positive numbers."""
+    has_positive = any(x > 0 for x in nb_list)
+    has_negative = any(x < 0 for x in nb_list)
+    return has_positive and has_negative
+
 def noise_estimation(x, h, m):
     """Compute estimate sigma_k of the noise level."""
     pts = np.arange(x-(m//2)*h, x+(m//2)*h, h)
-    delta_f = noisy_function(pts, noise_std=0.01)
+    delta_k = noisy_function(pts, noise_std=0.01)
     #delta_k = [1.00327, 1.01081, 1.0205, 1.0325, 1.04117, 1.04955, 1.05907]
+    delta_list, sigma_list = [], []
     for k in range(m):
         delta_k = np.diff(delta_k)
         gamma_k = (math.factorial((k+1))**2)/math.factorial(2*(k+1))
         sigma_k = np.sqrt((gamma_k/(m+1-(k+1)))*np.sum(delta_k**2))
-        print("{:.2e}".format(sigma_k))
+        delta_list.append(has_both_negative_and_positive(delta_k))
+        sigma_list.append(sigma_k)
+
+    for l in range(len(sigma_list)-2):
+        conv_condition = (np.amax(sigma_list[l:l+2] <= 4*np.amin(sigma_list[l:l+2])))
+        noise_contamination = delta_list[l]
+        if conv_condition and noise_contamination:
+            return sigma_list[l]
 
 if __name__ == "__main__":
-    noise_estimation(x=0, h=1e-2, m=6)
+    sigma_k = noise_estimation(x=1, h=1e-10, m=10)
+    print(sigma_k)
