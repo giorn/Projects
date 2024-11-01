@@ -41,7 +41,7 @@ class ObjectiveFunctionWrapper:
         self.handle_failure = handle_failure
 
     def __call__(self, x):
-        """Calls to wrapped function."""
+        """Call to wrapped function."""
         self.last_x = x
         _f = self.fun(x)
         if (_f == "Crash") and self.handle_failure:
@@ -50,7 +50,7 @@ class ObjectiveFunctionWrapper:
         return _f
 
     def stop(self, *args):
-        """Callback: checks if termination condition is reached."""
+        """Callback: check if termination condition is reached."""
         self.number_of_iter += 1
         self.last_f = self.fun(self.last_x)
         if self.last_f < self.tol:
@@ -58,7 +58,7 @@ class ObjectiveFunctionWrapper:
         
 def main(nb_of_opti, func, fun_tol=1e-4, method="BFGS", \
         proba_of_failure=0.00, verbose=0, handle_failure=0):
-    """Launches several optimizations.
+    """Launch several optimizations.
     Inputs:
     - nb_of_opti: number of optimizations launched
     - func: function to optimize
