@@ -1,7 +1,7 @@
 """ 
 Author: Gregoire Caron 
 Date Created: 2024-10-31
-Last Modified: 2024-11-01
+Last Modified: 2024-11-04
 Module displaying an application of the ECNoise algorithm by More and Wild.
 """
 
@@ -38,10 +38,11 @@ def noise_estimation(x, h, m):
     for k in range(m):
         delta_k = np.diff(delta_k)
         gamma_k = (math.factorial((k+1))**2)/math.factorial(2*(k+1))
-        sigma_k = np.sqrt((gamma_k/(m+1-(k+1)))*np.sum(delta_k**2))
+        sigma_k = np.sqrt((gamma_k/(m+1-(k+1)))*np.sum(delta_k**2))  # Compute noise level estimate
         delta_list.append(has_both_negative_and_positive(delta_k))
         sigma_list.append(sigma_k)
 
+    # Select correct estimation based on two conditions: convergence and noisse contamination
     for l in range(len(sigma_list)-2):
         conv_condition = (np.amax(sigma_list[l:l+2] <= 4*np.amin(sigma_list[l:l+2])))
         noise_contamination = delta_list[l]
