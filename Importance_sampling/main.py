@@ -28,7 +28,7 @@ class Estimation():
         prob_event = np.mean(temperatures > self.threshold).astype(float)
         return prob_event
     
-    def importance_sampling_MC_estimation(self, importance_mean, importance_std):
+    def importance_sampling_MC(self, importance_mean, importance_std):
         """Importance sampling Monte Carlo technique for more accurate probability estimation."""
         proposal_temperatures = np.random.normal(importance_mean, importance_std, self.n_simu)
         temp_density = norm.pdf(proposal_temperatures, self.mean, self.std)  # Densité de probabilité de la distribution cible
@@ -36,16 +36,42 @@ class Estimation():
         prob_event = np.mean((proposal_temperatures > self.threshold).astype(float) * (temp_density / new_temp_density))
         return prob_event
 
+    def adaptive_importance_sampling_MC(self, importance_mean, importance_std):
+        """Adaptive importance sampling Monte Carlo, with update via maximum likelihood estimation."""
+        results = []
+        for iteration in range(10):
+            proposal_temperatures = np.random.normal(importance_mean, importance_std, self.n_simu)
+            temp_density = norm.pdf(proposal_temperatures, self.mean, self.std)
+            new_temp_density = norm.pdf(proposal_temperatures, importance_mean, importance_std)
+            prob_event = np.mean((proposal_temperatures > self.threshold).astype(float) * (temp_density / new_temp_density))
+            results.append(prob_event)
+            importance_mean = np.mean(proposal_temperatures)
+            importance_std = np.std(proposal_temperatures)
+            print(importance_mean)
+        return results
+
 if __name__ == "__main__":
 
-    n_simu = 100000
+    n_simu = 100_000
     threshold = 80  # Temperature threshold for a fire to start
     mean_temp = 25
     std_dev = 5
 
+    # Basic estimation
     estim = Estimation(threshold, mean_temp, std_dev, n_simu)
     basic_prob_event = estim.basic_prob_estimation()
     print(f"Basic (and highly inaccurate) estimation method: probability of fire = {basic_prob_event}")
+
+    # Importance sampling estimation
+    importance_mean = 90
+    importance_std = 10
     importance_sampling_prob_event = \
-        estim.importance_sampling_MC_estimation(importance_mean=80, importance_std=10)
+        estim.importance_sampling_MC(importance_mean, importance_std)
+    print(f"Importance sampling Monte Carlo: probability of fire = {importance_sampling_prob_event}")
+
+    # Adaptive importance sampling estimation
+    importance_mean = 50
+    importance_std = 10
+    importance_sampling_prob_event = \
+        estim.adaptive_importance_sampling_MC(importance_mean, importance_std)
     print(f"Importance sampling Monte Carlo: probability of fire = {importance_sampling_prob_event}")
