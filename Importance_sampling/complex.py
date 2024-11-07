@@ -27,6 +27,10 @@ class Estimation():
         for i in range(self.n_simu):
             component = np.random.choice(len(means), p=weights)
             temp[i] = np.random.normal(means[component], std_devs[component])
+        prob_above_threshold = sum(w * (1 - norm.cdf(self.threshold, loc=mu, scale=std))
+                            for w, mu, std in zip(weights, means, std_devs))
+        # This probability is always exact and stays the same (for a given threshold value)
+        print(f"Analytical probability to be above {self.threshold}: {prob_above_threshold}")
         return temp
 
     def plot_temp(self):
@@ -39,6 +43,9 @@ class Estimation():
 
     def get_KDE(self, data, plot=False):
         """Fit KDE on basic temperatures and ..."""
+        # This fit varies from one run to another, especially on the tails (few points)
+        # The values p(x) to compute the weights p(x)/q(x) may vary by several orders of magnitude
+        # Therefore, the probability estimate p may also vary greatly
         kde = gaussian_kde(self.temp, bw_method='scott')
         x = np.arange(0, 100, 0.01)
         if plot:
@@ -61,7 +68,7 @@ class Estimation():
     def importance_sampling_MC(self, importance_mean, importance_std):
         """Importance sampling Monte Carlo technique for more accurate probability estimation."""
         proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)
-        temp_density = self.get_KDE(proposal_temp, plot=False)
+        temp_density = self.get_KDE(proposal_temp, plot=True)
         new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)
         weights = (temp_density / new_temp_density)
         prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)
@@ -70,7 +77,7 @@ class Estimation():
 if __name__ == "__main__":
 
     n_simu = 100_000
-    threshold = 60  # Temperature threshold for a fire to start
+    threshold = 80  # Temperature threshold for a fire to start
     mean_temp = 25
     std_dev = 5
 
@@ -80,7 +87,7 @@ if __name__ == "__main__":
     print(f"Basic (and highly inaccurate) estimation method: probability of fire = {basic_prob_event}")
 
     # Importance sampling estimation
-    importance_mean = 60
+    importance_mean = 90
     importance_std = 10
     importance_sampling_prob_event = \
         estim.importance_sampling_MC(importance_mean, importance_std)
