@@ -7,7 +7,11 @@ Same case as in main.py but with a more complex distribution of temperatures (no
 
 import numpy as np
 from scipy.stats import norm, gaussian_kde
+from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
+import os
+
+os.environ['OMP_NUM_THREADS'] = '1'
 
 
 class Estimation():
@@ -42,7 +46,7 @@ class Estimation():
         plt.show()
 
     def get_KDE(self, data, plot=False):
-        """Fit KDE on basic temperatures and ..."""
+        """Fit KDE on basic temperatures and evaluate density for given input data."""
         # This fit varies from one run to another, especially on the tails (few points)
         # The values p(x) to compute the weights p(x)/q(x) may vary by several orders of magnitude
         # Therefore, the probability estimate p may also vary greatly
@@ -54,6 +58,22 @@ class Estimation():
             plt.show()
         kde_values = kde(data)
         return kde_values
+    
+    def get_GMM(self, data, plot=False):
+        """Fit KDE on basic temperatures and evaluate density for given input data."""
+        n_components = 4
+        gmm = GaussianMixture(n_components=n_components)
+        gmm.fit(self.temp.reshape(-1, 1))
+        x = np.arange(0, 100, 0.01).reshape(-1, 1)
+        if plot:
+            plt.hist(self.temp, bins=30, density=True, alpha=0.5, color='skyblue')
+            logprob = gmm.score_samples(x)
+            pdf = np.exp(logprob)
+            plt.plot(x, pdf)
+            plt.show()
+        logprob = gmm.score_samples(data.reshape(-1, 1))
+        gmm_values = np.exp(logprob)
+        return gmm_values
 
     def basic_prob_estimation(self, plot=False):
         """Basic (and highly inaccurate) way to estimate the probability."""
@@ -65,10 +85,13 @@ class Estimation():
         prob_event = np.mean(self.temp > self.threshold)
         return prob_event
     
-    def importance_sampling_MC(self, importance_mean, importance_std):
+    def importance_sampling_MC(self, importance_mean, importance_std, density_estim_method="GMM"):
         """Importance sampling Monte Carlo technique for more accurate probability estimation."""
         proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)
-        temp_density = self.get_KDE(proposal_temp, plot=True)
+        if density_estim_method == "KDE":
+            temp_density = self.get_KDE(proposal_temp, plot=True)
+        else:
+            temp_density = self.get_GMM(proposal_temp, plot=True)
         new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)
         weights = (temp_density / new_temp_density)
         prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)
