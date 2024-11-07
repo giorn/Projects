@@ -1,15 +1,19 @@
 """ 
 Author: Gregoire Caron 
 Date Created: 2024-11-04
-Last Modified: 2024-11-04
+Last Modified: 2024-11-07
 Module to apply importance sampling Monte Carlo to an actual case.
 This actual case is fire detection when temperature > threhold = 80.
-The goal is to compute the integral (mean) G, over [0,100], of a function g(x).
-g is an indicator function (0 if x < 80, 1 else).
+We assume the temperature follows a distribution p(x).
+If X is a random variable that follows p(x), it amounts to computing p = P(X>80).
+It amounts to p = ∫f(x)p(x)dx with f the indicator function f(x) = 1 if x>80, 0 else.
+It is transformed into p = ∫f(x)q(x)w(x)dx with the weight w(x) = p(x)/q(x).
+q(x) is chosen to approximate f(x)p(x). This decreases the variance of the estimate of p.
 """
 
 import numpy as np
 from scipy.stats import norm
+import matplotlib.pyplot as plt
 
 
 class Estimation():
@@ -25,7 +29,7 @@ class Estimation():
         # Normal distribution for the temperatures
         temperatures = np.random.normal(self.mean, self.std, self.n_simu)
         # Estimation of the probability for a fire to start
-        prob_event = np.mean(temperatures > self.threshold).astype(float)
+        prob_event = np.mean(temperatures > self.threshold)
         return prob_event
     
     def importance_sampling_MC(self, importance_mean, importance_std):
@@ -33,21 +37,21 @@ class Estimation():
         proposal_temperatures = np.random.normal(importance_mean, importance_std, self.n_simu)
         temp_density = norm.pdf(proposal_temperatures, self.mean, self.std)  # Densité de probabilité de la distribution cible
         new_temp_density = norm.pdf(proposal_temperatures, importance_mean, importance_std)
-        prob_event = np.mean((proposal_temperatures > self.threshold).astype(float) * (temp_density / new_temp_density))
+        weights = (temp_density / new_temp_density)
+        prob_event = np.mean((proposal_temperatures > self.threshold).astype(float) * weights)
         return prob_event
 
-    def adaptive_importance_sampling_MC(self, importance_mean, importance_std):
+    def adaptive_importance_sampling_MC(self, importance_mean, importance_std, nb_iterations):
         """Adaptive importance sampling Monte Carlo, with update via maximum likelihood estimation."""
         results = []
-        for iteration in range(10):
+        for iteration in range(nb_iterations):
             proposal_temperatures = np.random.normal(importance_mean, importance_std, self.n_simu)
             temp_density = norm.pdf(proposal_temperatures, self.mean, self.std)
             new_temp_density = norm.pdf(proposal_temperatures, importance_mean, importance_std)
-            prob_event = np.mean((proposal_temperatures > self.threshold).astype(float) * (temp_density / new_temp_density))
+            weights = (temp_density / new_temp_density)
+            prob_event = np.mean((proposal_temperatures > self.threshold).astype(float) * weights)
             results.append(prob_event)
-            importance_mean = np.mean(proposal_temperatures)
-            importance_std = np.std(proposal_temperatures)
-            print(importance_mean)
+            importance_mean = np.mean(proposal_temperatures[proposal_temperatures > self.threshold])
         return results
 
 if __name__ == "__main__":
@@ -72,6 +76,9 @@ if __name__ == "__main__":
     # Adaptive importance sampling estimation
     importance_mean = 50
     importance_std = 10
+    nb_iterations = 100
     importance_sampling_prob_event = \
-        estim.adaptive_importance_sampling_MC(importance_mean, importance_std)
+        estim.adaptive_importance_sampling_MC(importance_mean, importance_std, nb_iterations)
+    plt.plot(np.arange(nb_iterations), importance_sampling_prob_event)
+    plt.show()
     print(f"Importance sampling Monte Carlo: probability of fire = {importance_sampling_prob_event}")
