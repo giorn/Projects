@@ -38,6 +38,7 @@ class Estimation():
         return temp
 
     def plot_temp(self):
+        """Plot temperature distribution."""
         plt.hist(self.temp, bins=50, density=True, alpha=0.6, color='g')
         plt.xlabel("Temperature")
         plt.ylabel("Probability density")
@@ -59,11 +60,27 @@ class Estimation():
         kde_values = kde(data)
         return kde_values
     
+    def find_best_GMM(self, plot=False):
+        """Find the best number of components for the GMM."""
+        lowest_bic = np.infty
+        bic = []
+        n_components_range = range(1, 20)
+        for n_components in n_components_range:
+            gmm = GaussianMixture(n_components=n_components, covariance_type='full', random_state=23)
+            gmm.fit(self.temp.reshape(-1, 1))
+            bic.append(gmm.bic(self.temp.reshape(-1, 1)))
+            if bic[-1] < lowest_bic:
+                lowest_bic = bic[-1]
+                best_gmm = gmm
+        plt.plot(n_components_range, bic, label="BIC")
+        plt.legend()
+        plt.show()
+        return best_gmm
+    
     def get_GMM(self, data, plot=False):
         """Fit KDE on basic temperatures and evaluate density for given input data."""
         n_components = 4
-        gmm = GaussianMixture(n_components=n_components)
-        gmm.fit(self.temp.reshape(-1, 1))
+        gmm = self.find_best_GMM()
         x = np.arange(0, 100, 0.01).reshape(-1, 1)
         if plot:
             plt.hist(self.temp, bins=30, density=True, alpha=0.5, color='skyblue')
@@ -89,9 +106,9 @@ class Estimation():
         """Importance sampling Monte Carlo technique for more accurate probability estimation."""
         proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)
         if density_estim_method == "KDE":
-            temp_density = self.get_KDE(proposal_temp, plot=True)
+            temp_density = self.get_KDE(proposal_temp, plot=False)
         else:
-            temp_density = self.get_GMM(proposal_temp, plot=True)
+            temp_density = self.get_GMM(proposal_temp, plot=False)
         new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)
         weights = (temp_density / new_temp_density)
         prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)
@@ -100,7 +117,7 @@ class Estimation():
 if __name__ == "__main__":
 
     n_simu = 100_000
-    threshold = 80  # Temperature threshold for a fire to start
+    threshold = 90  # Temperature threshold for a fire to start
     mean_temp = 25
     std_dev = 5
 
@@ -112,6 +129,7 @@ if __name__ == "__main__":
     # Importance sampling estimation
     importance_mean = 90
     importance_std = 10
+    # KDE much slower than GMM ofc
     importance_sampling_prob_event = \
-        estim.importance_sampling_MC(importance_mean, importance_std)
+        estim.importance_sampling_MC(importance_mean, importance_std, density_estim_method="KDE")
     print(f"Importance sampling Monte Carlo: probability of fire = {importance_sampling_prob_event}")
