@@ -24,47 +24,49 @@ class Estimation():
         self.std = std
         self.n_simu = n_simu
 
-    def get_temperatures(self):
-        """Return temperatures sampled from a normal distribution"""
+    def get_temp(self):
+        """Return temperatures sampled from a normal distribution."""
         return np.random.normal(self.mean, self.std, self.n_simu)
     
-    def plot_temperatures(self, temperatures):
-        plt.hist(temperatures, bins=50, density=True, alpha=0.6, color='g')
+    def plot_temp(self, temp):
+        """Plot temperature distribution."""
+        plt.hist(temp, bins=50, density=True, alpha=0.6, color='g')
         plt.xlabel("Temperature")
         plt.ylabel("Probability density")
         plt.grid()
         plt.tight_layout()
         plt.show()
 
-    def basic_prob_estimation(self):
+    def basic_prob_estimation(self, plot=False):
         """Basic (and highly inaccurate) way to estimate the probability."""
         # Normal distribution for the temperatures
-        temperatures = self.get_temperatures()
-        self.plot_temperatures(temperatures)
+        temp = self.get_temp()
+        if plot:
+            self.plot_temp(temp)
         # Estimation of the probability for a fire to start
-        prob_event = np.mean(temperatures > self.threshold)
+        prob_event = np.mean(temp > self.threshold)
         return prob_event
     
     def importance_sampling_MC(self, importance_mean, importance_std):
         """Importance sampling Monte Carlo technique for more accurate probability estimation."""
-        proposal_temperatures = np.random.normal(importance_mean, importance_std, self.n_simu)
-        temp_density = norm.pdf(proposal_temperatures, self.mean, self.std)  # Densité de probabilité de la distribution cible
-        new_temp_density = norm.pdf(proposal_temperatures, importance_mean, importance_std)
+        proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)
+        temp_density = norm.pdf(proposal_temp, self.mean, self.std)  # Densité de probabilité de la distribution cible
+        new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)
         weights = (temp_density / new_temp_density)
-        prob_event = np.mean((proposal_temperatures > self.threshold).astype(float) * weights)
+        prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)
         return prob_event
 
     def adaptive_importance_sampling_MC(self, importance_mean, importance_std, nb_iterations):
         """Adaptive importance sampling Monte Carlo, with update via maximum likelihood estimation."""
         results = []
         for iteration in range(nb_iterations):
-            proposal_temperatures = np.random.normal(importance_mean, importance_std, self.n_simu)
-            temp_density = norm.pdf(proposal_temperatures, self.mean, self.std)
-            new_temp_density = norm.pdf(proposal_temperatures, importance_mean, importance_std)
+            proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)
+            temp_density = norm.pdf(proposal_temp, self.mean, self.std)
+            new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)
             weights = (temp_density / new_temp_density)
-            prob_event = np.mean((proposal_temperatures > self.threshold).astype(float) * weights)
+            prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)
             results.append(prob_event)
-            importance_mean = np.mean(proposal_temperatures[proposal_temperatures > self.threshold])
+            importance_mean = np.mean(proposal_temp[proposal_temp > self.threshold])
         return results
 
 if __name__ == "__main__":
