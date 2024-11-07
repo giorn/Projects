@@ -24,10 +24,23 @@ class Estimation():
         self.std = std
         self.n_simu = n_simu
 
+    def get_temperatures(self):
+        """Return temperatures sampled from a normal distribution"""
+        return np.random.normal(self.mean, self.std, self.n_simu)
+    
+    def plot_temperatures(self, temperatures):
+        plt.hist(temperatures, bins=50, density=True, alpha=0.6, color='g')
+        plt.xlabel("Temperature")
+        plt.ylabel("Probability density")
+        plt.grid()
+        plt.tight_layout()
+        plt.show()
+
     def basic_prob_estimation(self):
         """Basic (and highly inaccurate) way to estimate the probability."""
         # Normal distribution for the temperatures
-        temperatures = np.random.normal(self.mean, self.std, self.n_simu)
+        temperatures = self.get_temperatures()
+        self.plot_temperatures(temperatures)
         # Estimation of the probability for a fire to start
         prob_event = np.mean(temperatures > self.threshold)
         return prob_event
@@ -79,6 +92,4 @@ if __name__ == "__main__":
     nb_iterations = 100
     importance_sampling_prob_event = \
         estim.adaptive_importance_sampling_MC(importance_mean, importance_std, nb_iterations)
-    plt.plot(np.arange(nb_iterations), importance_sampling_prob_event)
-    plt.show()
-    print(f"Importance sampling Monte Carlo: probability of fire = {importance_sampling_prob_event}")
+    print(f"Importance sampling Monte Carlo: probability of fire = {np.mean(importance_sampling_prob_event)}")
