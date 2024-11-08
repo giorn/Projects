@@ -1,7 +1,7 @@
 """ 
 Author: Gregoire Caron 
 Date Created: 2024-11-04
-Last Modified: 2024-11-07
+Last Modified: 2024-11-08
 Module to apply importance sampling Monte Carlo to an actual case.
 This actual case is fire detection when temperature > threhold = 80.
 We assume the temperature follows a distribution p(x).

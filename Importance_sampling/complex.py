@@ -1,7 +1,7 @@
 """ 
 Author: Gregoire Caron 
 Date Created: 2024-11-07
-Last Modified: 2024-11-07
+Last Modified: 2024-11-08
 Same case as in main.py but with a more complex distribution of temperatures (no analytical expression).
 """
 
@@ -21,6 +21,10 @@ class Estimation():
         self.mean = mean
         self.std = std
         self.n_simu = n_simu
+
+    def get_temp(self):
+        """Return temperatures sampled from a normal distribution."""
+        return np.random.normal(self.mean, self.std, self.n_simu)
     
     def get_complex_temp(self):
         """Return temperatures sampled from a mixture of Gaussians."""
@@ -116,20 +120,21 @@ class Estimation():
 
 if __name__ == "__main__":
 
-    n_simu = 100_000
-    threshold = 90  # Temperature threshold for a fire to start
+    n_simu = 10_000
+    threshold = 80  # Temperature threshold for a fire to start
     mean_temp = 25
     std_dev = 5
 
     # Basic estimation
     estim = Estimation(threshold, mean_temp, std_dev, n_simu)
     basic_prob_event = estim.basic_prob_estimation()
-    print(f"Basic (and highly inaccurate) estimation method: probability of fire = {basic_prob_event}")
+    print(f"Basic (and more inaccurate) estimation method: probability of fire = {basic_prob_event}")
 
     # Importance sampling estimation
-    importance_mean = 90
+    importance_mean = 80
     importance_std = 10
     # KDE much slower than GMM ofc
+    # Good illustration that it is difficult to estimate p(x) correctly enough to then compute the weights and the IS proba
     importance_sampling_prob_event = \
-        estim.importance_sampling_MC(importance_mean, importance_std, density_estim_method="KDE")
+        estim.importance_sampling_MC(importance_mean, importance_std, density_estim_method="GMM")
     print(f"Importance sampling Monte Carlo: probability of fire = {importance_sampling_prob_event}")
