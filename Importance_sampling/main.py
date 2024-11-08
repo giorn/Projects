@@ -26,6 +26,7 @@ class Estimation():
 
     def get_temp(self):
         """Return temperatures sampled from a normal distribution."""
+        print(norm.sf(self.threshold, loc=self.mean, scale=self.std))  # Survival function
         return np.random.normal(self.mean, self.std, self.n_simu)
     
     def plot_temp(self, temp):
