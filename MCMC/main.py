@@ -4,6 +4,7 @@ Date Created: 2024-11-08
 Last Modified: 2024-11-08
 Small example of application of the Markov Chain Monte-Carlo Metropolis-Hastings algorithm.
 Useful when sampling a distribution using basic Monte-Carlo is too long or expensive.
+[Roberts97] Optimal acceptance rate = 0.234.
 """
 
 import numpy as np
