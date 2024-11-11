@@ -24,11 +24,11 @@ class Sampling():
     def __init__(self, target_dist, n_samples):
         self.target_dist = target_dist
         self.n_samples = n_samples
-        self.adapt_interval = n_samples/20
+        self.adapt_interval = n_samples/10
 
     def Metropolis_Hastings(self):
         """Sample from the target distribution using the Metropolis-Hastings algorithm."""
-        proposal_std = 10.0
+        proposal_std = 30.0  # The further away the peaks, the greater the initial std should be
         samples = np.zeros(self.n_samples)
         x_current = 0
         acceptance_count = 0
@@ -43,14 +43,14 @@ class Sampling():
                 print(proposal_std)
                 acceptance_rate = acceptance_count / self.adapt_interval
                 if acceptance_rate < 0.2:
-                    proposal_std *= 0.9
+                    proposal_std *= 0.95
                 elif acceptance_rate > 0.3:
                     proposal_std *= 1.1
                 acceptance_count = 0
         return samples
 
     def plot_distrib(self, samples):
-        """"""
+        """Plot distribution of MCMC samples."""
         x = np.linspace(min(samples) - 2, max(samples) + 2, 500)
         plt.hist(samples, bins=100, density=True, alpha=0.6, color='blue', label='Samples (MCMC)')
         plt.plot(x, self.target_dist(x), 'r', label='Target distribution')
@@ -59,8 +59,18 @@ class Sampling():
         plt.legend()
         plt.show()
 
+    def trace_plot(self, samples):
+        """Plot evolution of sampled values with MCMC iterations."""
+        plt.plot(np.arange(self.n_samples), samples)
+        plt.xlabel('Iteration')
+        plt.ylabel('x')
+        plt.grid()
+        plt.tight_layout()
+        plt.show()
+
 if __name__ == "__main__":
     n_samples = 100_000
     sampling = Sampling(target_distribution, n_samples)
     samples = sampling.Metropolis_Hastings()
     sampling.plot_distrib(samples)
+    sampling.trace_plot(samples)
