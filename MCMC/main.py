@@ -21,56 +21,67 @@ def target_distribution(x):
 
 class Sampling():
 
-    def __init__(self, target_dist, n_samples):
+    def __init__(self, target_dist, n_samples, n_chains, low_x0, high_x0):
         self.target_dist = target_dist
         self.n_samples = n_samples
+        self.n_chains = n_chains
         self.adapt_interval = n_samples/10
+        self.low_x0 = low_x0
+        self.high_x0 = high_x0
 
     def Metropolis_Hastings(self):
         """Sample from the target distribution using the Metropolis-Hastings algorithm."""
-        proposal_std = 30.0  # The further away the peaks, the greater the initial std should be
-        samples = np.zeros(self.n_samples)
-        x_current = 0
-        acceptance_count = 0
-        for i in range(1, self.n_samples):
-            x_proposal = x_current + np.random.normal(0, proposal_std)
-            acceptance_ratio = target_distribution(x_proposal) / (target_distribution(x_current) + 1e-20)
-            if np.random.rand() < acceptance_ratio:
-                x_current = x_proposal
-                acceptance_count += 1
-            samples[i] = x_current
-            if i % self.adapt_interval == 0:
-                print(proposal_std)
-                acceptance_rate = acceptance_count / self.adapt_interval
-                if acceptance_rate < 0.2:
-                    proposal_std *= 0.95
-                elif acceptance_rate > 0.3:
-                    proposal_std *= 1.1
-                acceptance_count = 0
-        return samples
+        all_samples = []
+        for nc in range(self.n_chains):
+            proposal_std = 30.0  # The further away the peaks, the greater the initial std should be
+            samples = np.zeros(self.n_samples)
+            x_current = np.random.uniform(self.low_x0, self.high_x0)
+            acceptance_count = 0
+            for ns in range(1, self.n_samples):
+                x_proposal = x_current + np.random.normal(0, proposal_std)
+                acceptance_ratio = target_distribution(x_proposal) / (target_distribution(x_current) + 1e-20)
+                if np.random.rand() < acceptance_ratio:
+                    x_current = x_proposal
+                    acceptance_count += 1
+                samples[ns] = x_current
+                if ns % self.adapt_interval == 0:
+                    print(proposal_std)
+                    acceptance_rate = acceptance_count / self.adapt_interval
+                    if acceptance_rate < 0.2:
+                        proposal_std *= 0.95
+                    elif acceptance_rate > 0.3:
+                        proposal_std *= 1.1
+                    acceptance_count = 0
+            all_samples.append(samples)
+        return np.array(all_samples)
 
-    def plot_distrib(self, samples):
+    def plot_distrib(self, all_samples):
         """Plot distribution of MCMC samples."""
-        x = np.linspace(min(samples) - 2, max(samples) + 2, 500)
-        plt.hist(samples, bins=100, density=True, alpha=0.6, color='blue', label='Samples (MCMC)')
+        all_samples_flat = all_samples.flatten()
+        x = np.linspace(min(all_samples_flat) - 2, max(all_samples_flat) + 2, 500)
+        plt.hist(all_samples_flat, bins=100, density=True, alpha=0.6, color='blue', label='Samples (MCMC)')
         plt.plot(x, self.target_dist(x), 'r', label='Target distribution')
         plt.xlabel('x')
         plt.ylabel('Density')
         plt.legend()
         plt.show()
 
-    def trace_plot(self, samples):
+    def trace_plot(self, all_samples):
         """Plot evolution of sampled values with MCMC iterations."""
-        plt.plot(np.arange(self.n_samples), samples)
+        for i in range(self.n_chains):
+            plt.plot(np.arange(self.n_samples), all_samples[i], label=f"{i}th chain")
         plt.xlabel('Iteration')
         plt.ylabel('x')
         plt.grid()
+        plt.legend()
         plt.tight_layout()
         plt.show()
 
 if __name__ == "__main__":
     n_samples = 100_000
-    sampling = Sampling(target_distribution, n_samples)
-    samples = sampling.Metropolis_Hastings()
-    sampling.plot_distrib(samples)
-    sampling.trace_plot(samples)
+    n_chains = 2
+    low_x0, high_x0 = -2, 20
+    sampling = Sampling(target_distribution, n_samples, n_chains, low_x0, high_x0)
+    all_samples = sampling.Metropolis_Hastings()
+    sampling.plot_distrib(all_samples)
+    sampling.trace_plot(all_samples)
