@@ -21,19 +21,20 @@ def target_distribution(x):
 
 class Sampling():
 
-    def __init__(self, target_dist, n_samples, n_chains, low_x0, high_x0):
+    def __init__(self, target_dist, n_samples, n_chains, low_x0, high_x0, self.std):
         self.target_dist = target_dist
         self.n_samples = n_samples
         self.n_chains = n_chains
         self.adapt_interval = n_samples/10
         self.low_x0 = low_x0
         self.high_x0 = high_x0
+        self.std = std
 
     def Metropolis_Hastings(self):
         """Sample from the target distribution using the Metropolis-Hastings algorithm."""
         all_samples = []
         for nc in range(self.n_chains):
-            proposal_std = 30.0  # The further away the peaks, the greater the initial std should be
+            proposal_std = self.std  # The further away the peaks, the greater the initial std should be
             samples = np.zeros(self.n_samples)
             x_current = np.random.uniform(self.low_x0, self.high_x0)
             acceptance_count = 0
@@ -81,7 +82,8 @@ if __name__ == "__main__":
     n_samples = 100_000
     n_chains = 2
     low_x0, high_x0 = -2, 20
-    sampling = Sampling(target_distribution, n_samples, n_chains, low_x0, high_x0)
+    std = 30.0
+    sampling = Sampling(target_distribution, n_samples, n_chains, low_x0, high_x0, std)
     all_samples = sampling.Metropolis_Hastings()
     sampling.plot_distrib(all_samples)
     sampling.trace_plot(all_samples)
