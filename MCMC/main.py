@@ -19,9 +19,14 @@ def target_distribution(x):
     proba = np.sum([w*np.exp(-0.5*((x-m)/s)**2) for w, m, s in zip(weights, means, stds)], axis=0)
     return proba
 
+def autocorrelation(samples, max_lag):
+    """Compute autocorrelation for each lag."""
+    autocorr = np.array([np.corrcoef(samples[:-lag], samples[lag:])[0, 1] for lag in range(1, max_lag + 1)])
+    return autocorr
+
 class Sampling():
 
-    def __init__(self, target_dist, n_samples, n_chains, low_x0, high_x0, self.std):
+    def __init__(self, target_dist, n_samples, n_chains, low_x0, high_x0, std):
         self.target_dist = target_dist
         self.n_samples = n_samples
         self.n_chains = n_chains
@@ -78,6 +83,15 @@ class Sampling():
         plt.tight_layout()
         plt.show()
 
+    def plot_autocorrelation(self, samples, max_lag=100):
+        """Plot autocorrelation evolution with the lag."""
+        autocorr_values = autocorrelation(samples, max_lag)
+        plt.bar(range(1, max_lag + 1), autocorr_values)
+        plt.xlabel('Lag')
+        plt.ylabel('Autocorrelation')
+        plt.tight_layout()
+        plt.show()
+
 if __name__ == "__main__":
     n_samples = 100_000
     n_chains = 2
@@ -87,3 +101,4 @@ if __name__ == "__main__":
     all_samples = sampling.Metropolis_Hastings()
     sampling.plot_distrib(all_samples)
     sampling.trace_plot(all_samples)
+    sampling.plot_autocorrelation(all_samples[0], max_lag=1_000)
