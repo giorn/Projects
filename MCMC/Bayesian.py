@@ -13,8 +13,6 @@ import matplotlib.pyplot as plt
 plt.style.use('tableau-colorblind10')
 import corner
 
-np.random.seed(0)
-
 
 def get_data(n_points, true_a, true_b, true_c, plot=False):
     """Generate (x,y) data to fit."""
@@ -93,7 +91,7 @@ def main():
     # Get data to fit
     n_points = 500
     true_a, true_b, true_c = 2.5, -1.3, 0.5
-    x, y = get_data(n_points, true_a, true_b, true_c, plot=True)
+    x, y = get_data(n_points, true_a, true_b, true_c)
 
     # MCMC parameters
     yerr = 5  # Data std uncertainty
@@ -117,7 +115,11 @@ def main():
     plt.show()
     # Estimated parameters
     a_mcmc, b_mcmc, c_mcmc = np.median(samples, axis=0)
-    print(f"Estimated parameters: a = {a_mcmc:.3f}, b = {b_mcmc:.3f}, c = {c_mcmc:.3f}")
+    print(f"MCMC estimated parameters: a = {a_mcmc:.3f}, b = {b_mcmc:.3f}, c = {c_mcmc:.3f}")
+    # Fit quadratic model using polyfit (Least squares)
+    coeffs = np.polyfit(x, y, 2)
+    c_fit, b_fit, a_fit = coeffs
+    print(f"Least squares fit: a = {a_fit:.3f}, b = {b_fit:.3f}, c = {c_fit:.3f}")
 
 if __name__ == "__main__":
     main()
