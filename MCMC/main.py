@@ -1,10 +1,12 @@
 """ 
 Author: Gregoire Caron 
 Date Created: 2024-11-08
-Last Modified: 2024-11-08
-Small example of application of the Markov Chain Monte-Carlo Metropolis-Hastings algorithm.
+Last Modified: 2024-11-11
+Small example of application of the Markov Chain Monte-Carlo (MCMC) Metropolis-Hastings algorithm.
+MCMC methods are adapted to relatively low dimensional problems (d<20).
 Useful when sampling a distribution using basic Monte-Carlo is too long or expensive.
-[Roberts97] Optimal acceptance rate = 0.234.
+[Roberts97] Asymptotic optimal acceptance rate = 0.234 for high-dimensional problems (d>5).
+[Gelman96] But optimal acceptance rate = 0.44 for one-dimensional problems.
 """
 
 import numpy as np
@@ -51,11 +53,10 @@ class Sampling():
                     acceptance_count += 1
                 samples[ns] = x_current
                 if ns % self.adapt_interval == 0:
-                    print(proposal_std)
                     acceptance_rate = acceptance_count / self.adapt_interval
-                    if acceptance_rate < 0.2:
+                    if acceptance_rate < 0.4:
                         proposal_std *= 0.95
-                    elif acceptance_rate > 0.3:
+                    elif acceptance_rate > 0.5:
                         proposal_std *= 1.1
                     acceptance_count = 0
             all_samples.append(samples)
