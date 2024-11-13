@@ -10,6 +10,7 @@ Goal is to find the pdf of parameters (a,b,c) for quadratic fit over data, i.e. 
 import numpy as np
 import emcee
 import matplotlib.pyplot as plt
+plt.style.use('tableau-colorblind10')
 import corner
 
 np.random.seed(23)
@@ -58,6 +59,16 @@ class Log_probability():
         if not np.isfinite(lp):
             return -np.inf
         return lp + log_likelihood(theta, x, y, yerr)  # Bayes theorem in log way
+    
+def trace_plot(samples):
+    """Show trace plots."""
+    fig, ax = plt.subplots(3, figsize=(10, 7), sharex=True)
+    labels = ["a", "b", "c"]
+    for i in range(3):
+        ax[i].plot(samples[:, i], alpha=0.5)
+        ax[i].set_ylabel(labels[i])
+        ax[i].set_xlabel("Step number")
+    plt.show()
 
 def main():
     """Main function for Bayesian analysis on quadratic regression."""
@@ -77,7 +88,9 @@ def main():
     sampler = emcee.EnsembleSampler(n_walkers, dim, log_proba.get_func, args=(x, y, yerr))
     sampler.run_mcmc(pos, n_steps, progress=True)
     burn_in = 1_000  # Burn-in (initial steps) to discard
-    samples = sampler.get_chain(discard=burn_in, thin=15, flat=True)
+    samples = sampler.get_chain(discard=burn_in, thin=15, flat=True)  # thin = frequency to save samples
+    # Convergence diagnostic
+    trace_plot(samples)
     # MCMC results
     corner.corner(samples, labels=["a", "b", "c"], truths=[true_a, true_b, true_c])
     plt.show()
