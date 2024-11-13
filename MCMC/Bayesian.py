@@ -13,14 +13,21 @@ import matplotlib.pyplot as plt
 plt.style.use('tableau-colorblind10')
 import corner
 
-np.random.seed(23)
+np.random.seed(0)
 
 
-def get_data(n_points, true_a, true_b, true_c):
+def get_data(n_points, true_a, true_b, true_c, plot=False):
     """Generate (x,y) data to fit."""
     x = np.linspace(-10, 10, n_points)
     y = true_a + true_b * x + true_c * x**2
     y += np.random.normal(0, 5, size=n_points)
+    if plot:
+        plt.scatter(x, y, marker="+")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.grid()
+        plt.tight_layout()
+        plt.show()
     return x, y
 
 class Log_probability():
@@ -86,7 +93,7 @@ def main():
     # Get data to fit
     n_points = 500
     true_a, true_b, true_c = 2.5, -1.3, 0.5
-    x, y = get_data(n_points, true_a, true_b, true_c)
+    x, y = get_data(n_points, true_a, true_b, true_c, plot=True)
 
     # MCMC parameters
     yerr = 5  # Data std uncertainty
