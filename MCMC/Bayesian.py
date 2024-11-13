@@ -37,23 +37,27 @@ def bound_log_prior(theta):
         return 0.0
     return -np.inf
 
-def gaussian_log_prior(theta):
+def gaussian_log_prior(theta, mu_a, mu_b, mu_c):
     """Return a gaussian log prior."""
     a, b, c = theta
-    mu_a, mu_b, mu_c = 2.0, -1.0, 0.4
-    sigma_a, sigma_b, sigma_c = 3, 1.5, 0.3
+    sigma_a, sigma_b, sigma_c = 1.0, 1.0, 1.0
     log_prior_a = -0.5 * ((a - mu_a) / sigma_a) ** 2 - np.log(sigma_a * np.sqrt(2 * np.pi))
     log_prior_b = -0.5 * ((b - mu_b) / sigma_b) ** 2 - np.log(sigma_b * np.sqrt(2 * np.pi))
     log_prior_c = -0.5 * ((c - mu_c) / sigma_c) ** 2 - np.log(sigma_c * np.sqrt(2 * np.pi))
     return log_prior_a + log_prior_b + log_prior_c
 
-def log_probability(theta, x, y, yerr):
-    """Compute the log probability using Bayes theorem."""
-    #lp = bound_log_prior(theta)
-    lp = gaussian_log_prior(theta)
-    if not np.isfinite(lp):
-        return -np.inf
-    return lp + log_likelihood(theta, x, y, yerr)  # Bayes theorem in log way
+class Log_probability():
+
+    def __init__(self, guesses):
+        self.mu_a, self.mu_b, self.mu_c = guesses
+
+    def get_func(self, theta, x, y, yerr):
+        """Compute the log probability using Bayes theorem."""
+        #lp = bound_log_prior(theta)
+        lp = gaussian_log_prior(theta, self.mu_a, self.mu_b, self.mu_c)
+        if not np.isfinite(lp):
+            return -np.inf
+        return lp + log_likelihood(theta, x, y, yerr)  # Bayes theorem in log way
 
 def main():
     """Main function for Bayesian analysis on quadratic regression."""
@@ -69,7 +73,8 @@ def main():
     dim = 3
     pos = initial_guesses + 1e-4 * np.random.randn(n_walkers, dim)  # Initial conditions
     # MCMC initialization and launch
-    sampler = emcee.EnsembleSampler(n_walkers, dim, log_probability, args=(x, y, yerr))
+    log_proba = Log_probability(initial_guesses)
+    sampler = emcee.EnsembleSampler(n_walkers, dim, log_proba.get_func, args=(x, y, yerr))
     sampler.run_mcmc(pos, n_steps, progress=True)
     burn_in = 1_000  # Burn-in (initial steps) to discard
     samples = sampler.get_chain(discard=burn_in, thin=15, flat=True)
