@@ -28,7 +28,7 @@ def log_likelihood(theta, x, y, yerr):
     model = a + b * x + c * x**2
     return -0.5 * np.sum(((y - model) / yerr) ** 2)
 
-def log_prior(theta):
+def bound_log_prior(theta):
     """Return a log prior = assumption on the distribution before observing the data
     Here that parameters are within reasonable ranges.
     """
@@ -37,9 +37,20 @@ def log_prior(theta):
         return 0.0
     return -np.inf
 
+def gaussian_log_prior(theta):
+    """Return a gaussian log prior."""
+    a, b, c = theta
+    mu_a, mu_b, mu_c = 2.0, -1.0, 0.4
+    sigma_a, sigma_b, sigma_c = 3, 1.5, 0.3
+    log_prior_a = -0.5 * ((a - mu_a) / sigma_a) ** 2 - np.log(sigma_a * np.sqrt(2 * np.pi))
+    log_prior_b = -0.5 * ((b - mu_b) / sigma_b) ** 2 - np.log(sigma_b * np.sqrt(2 * np.pi))
+    log_prior_c = -0.5 * ((c - mu_c) / sigma_c) ** 2 - np.log(sigma_c * np.sqrt(2 * np.pi))
+    return log_prior_a + log_prior_b + log_prior_c
+
 def log_probability(theta, x, y, yerr):
     """Compute the log probability using Bayes theorem."""
-    lp = log_prior(theta)
+    #lp = bound_log_prior(theta)
+    lp = gaussian_log_prior(theta)
     if not np.isfinite(lp):
         return -np.inf
     return lp + log_likelihood(theta, x, y, yerr)  # Bayes theorem in log way
