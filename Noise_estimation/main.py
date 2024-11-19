@@ -29,11 +29,10 @@ def has_both_negative_and_positive(nb_list):
     has_negative = any(x < 0 for x in nb_list)
     return has_positive and has_negative
 
-def noise_estimation(x, h, m):
+def noise_estimation(f, x, h, m):
     """Compute estimate sigma_k of the noise level."""
     pts = np.arange(x-(m//2)*h, x+(m//2)*h, h)
-    delta_k = noisy_function(pts, noise_std=0.01)
-    #delta_k = [1.00327, 1.01081, 1.0205, 1.0325, 1.04117, 1.04955, 1.05907]
+    delta_k = f(pts, noise_std=0.01)
     delta_list, sigma_list = [], []
     for k in range(m):
         delta_k = np.diff(delta_k)
@@ -50,5 +49,5 @@ def noise_estimation(x, h, m):
             return sigma_list[l]
 
 if __name__ == "__main__":
-    noise_estimate = noise_estimation(x=1, h=1e-3, m=10)
+    noise_estimate = noise_estimation(f=noisy_function, x=1, h=1e-3, m=10)
     print(noise_estimate)
