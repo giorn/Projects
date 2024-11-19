@@ -9,8 +9,6 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-np.random.seed(0)
-
 
 def has_both_negative_and_positive(nb_list):
     """Check if a given list of numbers contains both negative and positive numbers."""
@@ -56,6 +54,6 @@ def noise_estimation(f, x, h, m):
             return sigma_list[l]
 
 if __name__ == "__main__":
-    Noise = Noisy_function(noise_std=0.08)
-    noise_estimate = noise_estimation(f=Noise.func, x=1, h=1e-4, m=10)
+    Noise = Noisy_function(noise_std=0.005)
+    noise_estimate = noise_estimation(f=Noise.func, x=1, h=1e-8, m=10)
     print(noise_estimate)
