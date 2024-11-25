@@ -88,4 +88,6 @@ List of inventions:
 
 ### Contact
 E-mail: g.caron1789@gmail.com  
-LinkedIn: www.linkedin.com/in/grégoire-caron-b27573196
+LinkedIn: www.linkedin.com/in/gregoire-caron
+
+
