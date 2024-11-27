@@ -21,7 +21,7 @@ def test_noise_estimation_0_01():
     assert noise_estimate == pytest.approx(std, rel=0.10)
 
 def test_noise_estimation_0_0005():
-    """Test that the noise estimate is approximately equal to 0.01."""
+    """Test that the noise estimate is approximately equal to 0.0005."""
     std = 0.0005
     Noise = Noisy_function(noise_std=std)
     noise_estimate = noise_estimation(f=Noise.func, x=1, h=1e-8, m=24)

@@ -23,10 +23,10 @@ class Estimation():
         self.mean = mean
         self.std = std
         self.n_simu = n_simu
+        self.true_proba = norm.sf(self.threshold, loc=self.mean, scale=self.std)  # Survival function
 
     def get_temp(self):
         """Return temperatures sampled from a normal distribution."""
-        print(norm.sf(self.threshold, loc=self.mean, scale=self.std))  # Survival function
         return np.random.normal(self.mean, self.std, self.n_simu)
     
     def plot_temp(self, temp):
@@ -50,24 +50,24 @@ class Estimation():
     
     def importance_sampling_MC(self, importance_mean, importance_std):
         """Importance sampling Monte Carlo technique for more accurate probability estimation."""
-        proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)
-        temp_density = norm.pdf(proposal_temp, self.mean, self.std)  # Densité de probabilité de la distribution cible
-        new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)
+        proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)  # Proposal distribution
+        temp_density = norm.pdf(proposal_temp, self.mean, self.std)  # Target pdf of sampled data from prop. distr.
+        new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)  # Proposal pdf of sampled data from prop. distr.
         weights = (temp_density / new_temp_density)
-        prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)
+        prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)  # IS probability estimation
         return prob_event
 
     def adaptive_importance_sampling_MC(self, importance_mean, importance_std, nb_iterations):
         """Adaptive importance sampling Monte Carlo, with update via maximum likelihood estimation."""
         results = []
         for iteration in range(nb_iterations):
-            proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)
-            temp_density = norm.pdf(proposal_temp, self.mean, self.std)
-            new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)
+            proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)  # Proposal distribution
+            temp_density = norm.pdf(proposal_temp, self.mean, self.std)  # Target pdf of sampled data from prop. distr.
+            new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)  # Proposal pdf of sampled data from prop. distr.
             weights = (temp_density / new_temp_density)
-            prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)
+            prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)  # IS probability estimation
             results.append(prob_event)
-            importance_mean = np.mean(proposal_temp[proposal_temp > self.threshold])
+            importance_mean = np.mean(proposal_temp[proposal_temp > self.threshold])  # Proposal distribution mean adaptation
         return results
 
 if __name__ == "__main__":
@@ -80,7 +80,8 @@ if __name__ == "__main__":
     # Basic estimation
     estim = Estimation(threshold, mean_temp, std_dev, n_simu)
     basic_prob_event = estim.basic_prob_estimation()
-    print(f"Basic (and highly inaccurate) estimation method: probability of fire = {basic_prob_event}")
+    print(f"True probability of fire = {estim.true_proba}")
+    print(f"Basic estimation method: probability of fire = {basic_prob_event}")
 
     # Importance sampling estimation
     importance_mean = 90
