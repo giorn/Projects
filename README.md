@@ -72,7 +72,20 @@ $$
 \right.
 $$
 
-[5] Jorge Moré and Stefan Wild. “Estimating Derivatives of Noisy Simulations”. In: ACM Transactions on Mathematical Software (TOMS) 38 (Apr. 2012). 
+[5] Jorge Moré and Stefan Wild. “Estimating Derivatives of Noisy Simulations”. In: ACM Transactions on Mathematical Software (TOMS) 38 (Apr. 2012).
+
+#### 5. Hard-to-sample distribution sampling
+
+Some distributions are easy to evaluate (the density), but hard to sample. For instance:
+- multivariate Gaussian distribution with a complex covariance matrix
+- posterior distribution in Bayesian inference
+- simulated annealing
+
+###### a. Importance sampling
+
+###### b. Markov Chain Monte Carlo (MCMC)
+
+###### c. Variational Inference
 
 <br>
 
