@@ -81,11 +81,11 @@ Some distributions are easy to evaluate (the density), but hard to sample. For i
 - posterior distribution in Bayesian inference
 - simulated annealing
 
-###### a. Importance sampling
+##### a. Importance sampling
 
-###### b. Markov Chain Monte Carlo (MCMC)
+##### b. Markov Chain Monte Carlo (MCMC)
 
-###### c. Variational Inference
+##### c. Variational Inference
 
 <br>
 
