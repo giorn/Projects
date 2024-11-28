@@ -81,9 +81,15 @@ Some distributions are easy to evaluate (the density), but hard to sample. For i
 - posterior distribution in Bayesian inference
 - simulated annealing
 
-##### a. Importance sampling
+##### a. Markov Chain Monte Carlo (MCMC)
 
-##### b. Markov Chain Monte Carlo (MCMC)
+##### b. Importance sampling
+
+Let us have X ~ p(x). We want to evaluate the expectation of some function f: $E_p(f(X)) = \int f(x) p(x) dx$. If X takes only discrete values, then $E_p(f(X)) = \sum f(x) p(x)$. In the context of a Monte Carlo simulation, $E_p(f(X)) \approx \frac{1}{N} \sum_{i=1}^N f(x_i)$ where the MC samples $x_i$ are drawn from distribution p(x).
+
+However, the Monte Carlo simulation under distribution p(x) may generate very few samples (or even none) in the area of interest to evaluate $E_p(f(X))$. In that case, one can resort to Importance Sampling. Instead of sampling from distribution p(x), one will sample from another distribution q(x) that will be more suitable to sample in this zone of interest. In other words, we have $E_p(f(X)) = \int f(x) \frac{p(x)}{q(x)} q(x) dx = E_q(f(X) \frac{p(X)}{q(X)}$. In a Monte Carlo setting, this leads to:
+
+$$E_p(f(X)) = \approx \frac{1}{N} \sum_{i=1}^N f(x_i) w(x_i)$$ where the MC samples $x_i$ are drawn from distribution q(x) and $w(x_i) = \frac{p(x_i)}{q(x_i)}$ are called the sampling ratios or sampling weights.
 
 ##### c. Variational Inference
 
