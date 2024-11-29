@@ -72,7 +72,34 @@ $$
 \right.
 $$
 
-[5] Jorge Moré and Stefan Wild. “Estimating Derivatives of Noisy Simulations”. In: ACM Transactions on Mathematical Software (TOMS) 38 (Apr. 2012). 
+[5] Jorge Moré and Stefan Wild. “Estimating Derivatives of Noisy Simulations”. In: ACM Transactions on Mathematical Software (TOMS) 38 (Apr. 2012).
+
+#### 5. Hard-to-sample distribution sampling
+
+Some distributions are easy to evaluate (the density), but hard to sample. For instance:
+- multivariate Gaussian distribution with a complex covariance matrix
+- posterior distribution in Bayesian inference
+- simulated annealing
+
+##### a. Markov Chain Monte Carlo (MCMC)
+
+##### b. Importance sampling (IS)
+
+Let us have X ~ p(x). We want to evaluate the expectation of some function f: $E_p(f(X)) = \int f(x) p(x) dx$. If X takes only discrete values, then $E_p(f(X)) = \sum f(x) p(x)$. In the context of a Monte Carlo (MC) simulation, $E_p(f(X)) \approx \frac{1}{N} \sum_{i=1}^N f(x_i)$ where the MC samples $x_i$ are drawn from distribution p(x).
+
+However, the MC simulation under distribution p(x) may generate very few samples (or even none) in the area of interest to evaluate $E_p(f(X))$. In that case, the variance of the MC estimator may be high. To solve this issue, one can resort to Importance Sampling (IS). Instead of sampling from distribution p(x), one will sample from another distribution q(x) that will be more suitable to sample in this zone of interest. In other words, we have $E_p(f(X)) = \int f(x) \frac{p(x)}{q(x)} q(x) dx = E_q(f(X) \frac{p(X)}{q(X)}$. In a MC setting, this leads to:
+
+$$E_p(f(X)) = \approx \frac{1}{N} \sum_{i=1}^N f(x_i) w(x_i)$$
+
+where the MC samples $x_i$ are drawn from distribution q(x) and $w(x_i) = \frac{p(x_i)}{q(x_i)}$ are called the sampling ratios or sampling weights. These are essential to make this estimator unbiased. It is important for q(x) to be large where |f(x)p(x)| is large, so that $Var_q(f(x)\frac{p(x)}{q(x)} < Var_p(f(x))$.
+
+###### Example:
+
+We want to estimate the probability that a fire starts. Let us assume that a fire starts only when the temperature reaches 80 degrees celsius. But this is a rare event: most of the time, the temperature is much lower and follows e.g. a normal distribution p(x) of mean=25.0 and std=5.0. So we want to compute $p_0 = P(X>80) = \int f(x) p(x) dx$ with X ~ p(x) and $f(x) = \mathbb{1}_{X>80}$. But, in that case, a basic MC sampling will produce very few instances of temperatures above 80 degrees and the variance, based on these few examples, will be relatively large.
+
+Instead, one can apply an Importance Sampling strategy, using a proposal distribution q(x) which is Gaussian of mean=90.0 and std=10.0. But, in a general setting, we might be unsure about the right proposal distribution q(x) to choose. One solution is Adaptive IS, which amounts to choosing a first not-so-good distribution and making it evolve. For instance, a Gaussian proposal distribution of mean=50.0 and std=10.0, whose mean is updated each X iterations, based on the sampled above 80 degrees.
+
+##### c. Variational Inference
 
 <br>
 
