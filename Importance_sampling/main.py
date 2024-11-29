@@ -12,8 +12,12 @@ q(x) is chosen to approximate f(x)p(x). This decreases the variance of the estim
 """
 
 import numpy as np
-from scipy.stats import norm
+from scipy.stats import norm, expon
 import matplotlib.pyplot as plt
+import logging
+
+logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class Estimation():
@@ -48,27 +52,90 @@ class Estimation():
         prob_event = np.mean(temp > self.threshold)
         return prob_event
     
-    def importance_sampling_MC(self, importance_mean, importance_std):
+    def sample_proposal(self, distribution, params):
+        """
+        Sample from a proposal distribution and calculate its PDF.
+        
+        Args:
+            distribution (str): 'normal' or 'exponential'.
+            params (dict): Parameters for the distribution.
+
+        Returns:
+            samples (np.ndarray): Samples from the proposal distribution.
+            pdf (np.ndarray): PDF values of the samples for the proposal distribution.
+        """
+        if distribution == "normal":
+            mean, std = params.get("mean"), params.get("std")
+            samples = np.random.normal(mean, std, self.n_simu)
+            pdf = norm.pdf(samples, mean, std)
+        elif distribution == "exponential":
+            threshold, rate = params.get("threshold"), params.get("rate")
+            samples = np.random.exponential(scale=1/rate, size=self.n_simu) + threshold
+            pdf = expon.pdf(samples - threshold, scale=1/rate)
+        else:
+            raise ValueError("Unsupported distribution type. Choose 'normal' or 'exponential'.")
+        return samples, pdf
+    
+    def importance_sampling_MC(self, distribution, params):
         """Importance sampling Monte Carlo technique for more accurate probability estimation."""
-        proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)  # Proposal distribution
-        temp_density = norm.pdf(proposal_temp, self.mean, self.std)  # Target pdf of sampled data from prop. distr.
-        new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)  # Proposal pdf of sampled data from prop. distr.
-        weights = (temp_density / new_temp_density)
+        proposal_temp, proposal_pdf = self.sample_proposal(distribution, params)
+        temp_pdf = norm.pdf(proposal_temp, self.mean, self.std)
+        log_weights = np.log(temp_pdf) - np.log(proposal_pdf)
+        weights = np.exp(log_weights)  # Avoid underflow / overflow
         prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)  # IS probability estimation
         return prob_event
 
-    def adaptive_importance_sampling_MC(self, importance_mean, importance_std, nb_iterations):
+    def adaptive_importance_sampling_MC(self, distribution, params, nb_iterations=10):
         """Adaptive importance sampling Monte Carlo, with update via maximum likelihood estimation."""
         results = []
         for iteration in range(nb_iterations):
-            proposal_temp = np.random.normal(importance_mean, importance_std, self.n_simu)  # Proposal distribution
-            temp_density = norm.pdf(proposal_temp, self.mean, self.std)  # Target pdf of sampled data from prop. distr.
-            new_temp_density = norm.pdf(proposal_temp, importance_mean, importance_std)  # Proposal pdf of sampled data from prop. distr.
-            weights = (temp_density / new_temp_density)
+            proposal_temp, proposal_pdf = self.sample_proposal(distribution, params)
+            temp_pdf = norm.pdf(proposal_temp, self.mean, self.std)
+            log_weights = np.log(temp_pdf) - np.log(proposal_pdf)
+            weights = np.exp(log_weights)  # Avoid underflow / overflow
             prob_event = np.mean((proposal_temp > self.threshold).astype(float) * weights)  # IS probability estimation
             results.append(prob_event)
-            importance_mean = np.mean(proposal_temp[proposal_temp > self.threshold])  # Proposal distribution mean adaptation
-        return results
+            
+            # Proposal distribution adaptation
+            if distribution == "normal":
+                logging.info(f"Iteration {iteration + 1}/{nb_iterations}, \
+                        importance_mean = {params["mean"]:.2f}, prob_event = {prob_event:.4e}")
+                params["mean"] = np.mean(proposal_temp[proposal_temp > self.threshold])
+            elif distribution == "exponential":
+                logging.info(f"Iteration {iteration + 1}/{nb_iterations}, \
+                        importance_rate = {params["rate"]:.2f}, prob_event = {prob_event:.4e}")
+                params["rate"] = 1 / np.mean(proposal_temp[proposal_temp > self.threshold] - params["threshold"])
+        return np.mean(results)
+    
+def main(experiment):
+
+    # Basic estimation
+    basic_prob_event = experiment.basic_prob_estimation()
+    print(f"Basic estimation method: probability of fire = {basic_prob_event}")
+
+    # IS - Gaussian
+    params_normal = {"mean": 90, "std": 10}
+    importance_sampling_prob_event = \
+        experiment.importance_sampling_MC(distribution="normal", params=params_normal)
+    print(f"IS - Gaussian proposal: probability of fire = {importance_sampling_prob_event}")
+
+    # IS - Exponential
+    params_expo = {"threshold": 80, "rate": 0.1}
+    importance_sampling_prob_event = \
+        experiment.importance_sampling_MC(distribution="exponential", params=params_expo)
+    print(f"IS - Exponential proposal: probability of fire = {importance_sampling_prob_event}")
+
+    # AIS - Gaussian
+    params_normal = {"mean": 50, "std": 10}
+    importance_sampling_prob_event = \
+        experiment.adaptive_importance_sampling_MC(distribution="normal", params=params_normal, nb_iterations=100)
+    print(f"AIS - Gaussian proposal: probability of fire = {np.mean(importance_sampling_prob_event)}")
+
+    # AIS - Exponential
+    params_expo = {"threshold": 80, "rate": 0.1}
+    importance_sampling_prob_event = \
+        experiment.adaptive_importance_sampling_MC(distribution="exponential", params=params_expo, nb_iterations=100)
+    print(f"AIS - Exponential proposal: probability of fire = {np.mean(importance_sampling_prob_event)}")
 
 if __name__ == "__main__":
 
@@ -76,24 +143,6 @@ if __name__ == "__main__":
     threshold = 80  # Temperature threshold for a fire to start
     mean_temp = 25
     std_dev = 5
-
-    # Basic estimation
     estim = Estimation(threshold, mean_temp, std_dev, n_simu)
-    basic_prob_event = estim.basic_prob_estimation()
     print(f"True probability of fire = {estim.true_proba}")
-    print(f"Basic estimation method: probability of fire = {basic_prob_event}")
-
-    # Importance sampling estimation
-    importance_mean = 90
-    importance_std = 10
-    importance_sampling_prob_event = \
-        estim.importance_sampling_MC(importance_mean, importance_std)
-    print(f"Importance sampling Monte Carlo: probability of fire = {importance_sampling_prob_event}")
-
-    # Adaptive importance sampling estimation
-    importance_mean = 50
-    importance_std = 10
-    nb_iterations = 100
-    importance_sampling_prob_event = \
-        estim.adaptive_importance_sampling_MC(importance_mean, importance_std, nb_iterations)
-    print(f"Importance sampling Monte Carlo: probability of fire = {np.mean(importance_sampling_prob_event)}")
+    main(estim)
